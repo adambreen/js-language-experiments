@@ -1,0 +1,69 @@
+<!doctype html>
+<head>
+    <script type='text/javascript'>
+
+        function log(string){
+            //console.log(string);
+
+            console.log('log context (from ' + string + ') : ', this);
+        }
+
+
+        function getLogMethod(){
+            return log;
+        }
+
+        function ShowView(MetaData){
+            this.showIt = function (){
+                console.log('showIt context: ', this);  //1. ShowView
+
+                getTemplate('http://www.templatepath.com', function(template){
+                    console.log('closure context: ', this); // 3. Window
+
+                    MetaData.getMethod()('showIt'); // 4. Window
+                });
+            };
+
+            log('called direct from ShowView - context: ', this);  //Window
+
+            this.doTest = log;
+
+            this.doTest('calling this.doTest direct from ShowView - context: ', this);  //ShowView
+
+            this.doTest2 = getLogMethod();
+
+            this.doTest2('calling this.doTest2 direct from ShowView - context: ', this);  //ShowView
+
+        }
+
+        function getTemplate(templatePath, callback){
+            //get the template from templatePath...
+            var template = '<div>blah blah blah</div>';
+
+            console.log('getTemplate context: ', this);  // 2. Window
+
+            callback(template);
+        }
+
+
+        var metaData = {
+            viewName: 'dashboard',
+            getMethod: function(){ return log; }
+            //getMethod: function(){ return window.test; }
+        };
+
+
+        var presenter = new ShowView(metaData);
+//        presenter.showIt();
+//        presenter.doTest('doTest');
+//        presenter.doTest2('doTest2');
+
+        presenter['doTest'].call(this, 'abc');   //Window
+
+
+
+
+
+    </script>
+</head>
+</html>
